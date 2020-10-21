@@ -91,6 +91,188 @@ The "typical" example adds in a few helpful features:
 - An out of memory handler, which will reset the device if a RAM allocation fails.
 - A failure to connect detector, so if it takes longer than 11 minutes to connect to the cloud, a deep power down for 30 seconds is done to hopefully reset things complete.
 
+Full firmware:
+
+```cpp
+#include "AB1805_RK.h"
+
+SYSTEM_THREAD(ENABLED);
+SYSTEM_MODE(SEMI_AUTOMATIC);
+
+SerialLogHandler logHandler;
+
+// This is the maximum amount of time to allow for connecting to cloud. If this time is
+// exceeded, do a deep power down. This should not be less than 10 minutes. 11 minutes
+// is a reasonable value to use.
+const std::chrono::milliseconds connectMaxTime = 11min;
+
+AB1805 ab1805(Wire);
+int outOfMemory = -1;
+bool cloudConnected = false;
+uint64_t cloudConnectStarted = 0;
+
+void outOfMemoryHandler(system_event_t event, int param);
+
+void setup() {
+    // Enabling an out of memory handler is a good safety tip. If we run out of
+    // memory a System.reset() is done.
+    System.on(out_of_memory, outOfMemoryHandler);
+    
+    // Optional: Enable to make it easier to see debug USB serial messages at startup
+    waitFor(Serial.isConnected, 15000);
+    delay(1000);
+
+    // Make sure you set up the AB1805 library from setup()!
+    ab1805.setup();
+
+    // This is how to check if we did a deep power down (optional)
+    AB1805::WakeReason wakeReason = ab1805.getWakeReason();
+    if (wakeReason == AB1805::WakeReason::DEEP_POWER_DOWN) {
+        Log.info("woke from DEEP_POWER_DOWN");
+    }
+
+    // Reset the AB1805 configuration to default values
+    ab1805.resetConfig();
+    
+    // If using the supercap, enable trickle charging here. 
+    // Do not enable this for the AB1805-Li example!
+    // ab1805.setTrickle(AB1805::REG_TRICKLE_DIODE_0_3 | AB1805::REG_TRICKLE_ROUT_3K);
+    
+    // Enable watchdog
+    ab1805.setWDT(AB1805::WATCHDOG_MAX_SECONDS);
+
+    // Connect to the Particle cloud
+    Particle.connect();
+}
+
+
+void loop() {
+    // Be sure to call ab1805.loop() on every call to loop()
+    ab1805.loop();
+
+    if (outOfMemory >= 0) {
+        // An out of memory condition occurred - reset device.
+        Log.info("out of memory occurred size=%d", outOfMemory);
+        delay(100);
+
+        System.reset();
+    }
+
+    // Monitor the cloud connection state and do a deep power down if a 
+    // failure to connect exceeds connectMaxTime (typically 11 minutes).
+    if (Particle.connected()) {
+        if (!cloudConnected) {
+            cloudConnected = true;
+            uint32_t elapsed = (uint32_t)(System.millis() - cloudConnectStarted);
+            Log.info("cloud connected in %lu ms", elapsed);
+        }
+    }
+    else {
+        if (cloudConnected) {
+            cloudConnected = false;
+            cloudConnectStarted = System.millis();
+            Log.info("lost cloud connection");
+        }
+        uint32_t elapsed = (uint32_t)(System.millis() - cloudConnectStarted);
+        if (elapsed > connectMaxTime.count()) {
+            Log.info("failed to connect to cloud, doing deep reset");
+            delay(100);
+            ab1805.deepPowerDown();
+        }
+    }
+}
+
+void outOfMemoryHandler(system_event_t event, int param) {
+    outOfMemory = param;
+}
+```
+
+#### Out of Memory Handler
+
+The out of memory handler is a good feature to have in your code. This is different than a check of `System.freeMemory()`. The out of memory handler is called when an allocation fails and returns NULL. Note that this is not in itself fatal, as your code might then do something to free up some memory and try again. However, in practice, if you are running that low on RAM, a reset is often a reasonable alternative. C/C++ do not have garbage collection and thus it's possible for memory to be fragmented into unusably small chunks. A reset is the only way to clean this up in most cases. Note that on Gen 2 devices and Gen 3 devices with Device OS 2.0.0 and later, a System.reset() should be fast because it stays connected to the cellular modem.
+
+
+You need a global variable, because it's not a good idea to reset directly from the system event handler.
+
+```cpp
+int outOfMemory = -1;
+```
+
+You need to register the out of memory handler from setup():
+
+```cpp
+System.on(out_of_memory, outOfMemoryHandler);
+```
+
+The handler function just sets the global variable:
+
+```cpp
+void outOfMemoryHandler(system_event_t event, int param) {
+    outOfMemory = param;
+}
+```
+
+And finally, from loop(), we take action if outOfMemory is >= 0:
+
+```cpp
+    if (outOfMemory >= 0) {
+        // An out of memory condition occurred - reset device.
+        Log.info("out of memory occurred size=%d", outOfMemory);
+        delay(100);
+
+        System.reset();
+    }
+```
+
+#### Connection Failure Deep Power Off
+
+You can configure the amount of time to fail to connect to the cloud before doing a deep power off for 30 seconds. The default is 11 minutes, and you should not set it less than 10. You can set it higher if you want.
+
+```cpp
+const std::chrono::milliseconds connectMaxTime = 11min;
+```
+
+These global variables are used:
+
+```cpp
+bool cloudConnected = false;
+uint64_t cloudConnectStarted = 0;
+```
+
+And this code is added to loop to do the detection:
+
+```cpp
+    if (Particle.connected()) {
+        if (!cloudConnected) {
+            cloudConnected = true;
+            uint32_t elapsed = (uint32_t)(System.millis() - cloudConnectStarted);
+            Log.info("cloud connected in %lu ms", elapsed);
+        }
+    }
+    else {
+        if (cloudConnected) {
+            cloudConnected = false;
+            cloudConnectStarted = System.millis();
+            Log.info("lost cloud connection");
+        }
+        uint32_t elapsed = (uint32_t)(System.millis() - cloudConnectStarted);
+        if (elapsed > connectMaxTime.count()) {
+            Log.info("failed to connect to cloud, doing deep reset");
+            delay(100);
+            ab1805.deepPowerDown();
+        }
+    }
+```
+
+This code just writes a message to debug serial both before resetting and after. However you may want to add some code to publish an event so you can keep track of how often this is happening. The wake reason is set during setup() and will remain valid so you can perform this check as necessary. Note that the existing block in setup() is a bad place to put a publish as you're not yet cloud connected.
+
+```
+    AB1805::WakeReason wakeReason = ab1805.getWakeReason();
+    if (wakeReason == AB1805::WakeReason::DEEP_POWER_DOWN) {
+        Log.info("woke from DEEP_POWER_DOWN");
+    }
+```
+
 
 ### 03-periodic-wake
 
