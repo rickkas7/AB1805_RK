@@ -872,9 +872,9 @@ public:
     static const uint8_t   REG_OSC_CTRL_ACIE        = 0x01;      //!< Oscillator control, auto-calibration fail interrupt enable
     static const uint8_t   REG_OSC_CTRL_DEFAULT     = 0x00;      //!< Oscillator control, default value
     static const uint8_t REG_OSC_STATUS             = 0x1d;      //!< Oscillator status register
-    static const uint8_t   REG_OSC_STATUS_XTCAL     = 0x0c;      //!< Oscillator status register, extended crystal calibration
-    static const uint8_t   REG_OSC_STATUS_LKO2      = 0x04;      //!< Oscillator status register, lock OUT2
-    static const uint8_t   REG_OSC_STATUS_OMODE     = 0x01;      //!< Oscillator status register, oscillator mode (read-only)
+    static const uint8_t   REG_OSC_STATUS_XTCAL     = 0xc0;      //!< Oscillator status register, extended crystal calibration
+    static const uint8_t   REG_OSC_STATUS_LKO2      = 0x20;      //!< Oscillator status register, lock OUT2
+    static const uint8_t   REG_OSC_STATUS_OMODE     = 0x10;      //!< Oscillator status register, oscillator mode (read-only)
     static const uint8_t   REG_OSC_STATUS_OF        = 0x02;      //!< Oscillator status register, oscillator failure
     static const uint8_t   REG_OSC_STATUS_ACF       = 0x01;      //!< Oscillator status register, auto-calibration failure
     static const uint8_t REG_CONFIG_KEY             = 0x1f;      //!< Register to set to modify certain other keys
