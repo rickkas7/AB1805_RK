@@ -5,6 +5,8 @@
 
 #include <time.h> // struct tm
 
+#define AB1805_ADDRESS 0x69
+
 /**
  * @brief Class for using the AB1805/AM1805 RTC/watchdog chip
  * 
@@ -37,7 +39,7 @@ public:
      * You typically allocate one of these objects as a global variable as 
      * a singleton. You can only have one of these objects per device.
      */
-    AB1805(TwoWire &wire = Wire, uint8_t i2cAddr = 0x69);
+    AB1805(TwoWire &wire = Wire, uint8_t i2cAddr = AB1805_ADDRESS);
 
     /**
      * @brief Destructor. Not normally used as this object is typically a global object.
@@ -966,7 +968,7 @@ protected:
     /**
      * @brief I2C address, always 0x69 as that is the address hardwired in the AB1805
      */
-    uint8_t i2cAddr = 0x69;
+    uint8_t i2cAddr = AB1805_ADDRESS;
 
     /**
      * @brief Which GPIO is connected to FOUT/nIRQ
