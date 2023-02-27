@@ -127,7 +127,10 @@ bool AB1805::resetConfig(uint32_t flags) {
 
     // Reset configuration registers to default values
     writeRegister(REG_STATUS, REG_STATUS_DEFAULT, false);
+    bool isRTCBitClear = isBitClear(REG_CTRL_1, REG_CTRL_1_WRTC, false);
     writeRegister(REG_CTRL_1, REG_CTRL_1_DEFAULT, false);
+    if(isRTCBitClear) // Restore RTC bit to proper state
+        clearRegisterBit(REG_CTRL_1, REG_CTRL_1_WRTC, false);
     writeRegister(REG_CTRL_2, REG_CTRL_2_DEFAULT, false);
     writeRegister(REG_INT_MASK, REG_INT_MASK_DEFAULT, false);
     writeRegister(REG_SQW, REG_SQW_DEFAULT, false);
