@@ -341,6 +341,13 @@ public:
     bool setCountdownTimer(int value, bool minutes);
 
     /**
+     * @brief Stops the interruptCountdownTimer
+     *
+     * @return true on success or false if an error occurs.
+     */
+    bool stopCountdownTimer();
+
+    /**
      * @brief Enable trickle charging mode
      * 
      * @param diodeAndRout Pass 0 to disable the trickle charger or one diode constant and one rout constant below.
