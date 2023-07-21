@@ -154,7 +154,7 @@ bool AB1805::resetConfig(uint32_t flags) {
         // and ACAL to 0 (however REG_OSC_CTRL_DEFAULT already sets ACAL to 0)
         oscCtrl |= REG_OSC_CTRL_OSEL | REG_OSC_CTRL_FOS;
     }
-    // oscCtrl |= REG_OSC_CTRL_FOS;
+    oscCtrl |= REG_OSC_CTRL_FOS;
     writeRegister(REG_CONFIG_KEY, 0xA1, false); // Needed to set config key to update REG_OSC_CTRL
     writeRegister(REG_OSC_CTRL, oscCtrl, false);
     writeRegister(REG_TRICKLE, REG_TRICKLE_DEFAULT, false);
