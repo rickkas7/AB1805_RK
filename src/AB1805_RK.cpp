@@ -707,6 +707,15 @@ bool AB1805::setCountdownTimer(int value, bool minutes) {
     return true;
 }
 
+bool AB1805::stopCountdownTimer() {
+    static const char *errorMsg = "failure in stopCountdownTimer %d";
+    bool bResult = writeRegister(REG_TIMER_CTRL, REG_TIMER_CTRL_DEFAULT);
+    if (!bResult) {
+        _log.error(errorMsg, __LINE__);
+        return false;
+    }
+    return true;
+}
 
 bool AB1805::readRegister(uint8_t regAddr, uint8_t &value, bool lock) {
     return readRegisters(regAddr, &value, 1, lock);
