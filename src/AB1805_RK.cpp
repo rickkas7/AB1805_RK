@@ -546,7 +546,7 @@ bool AB1805::deepPowerDown(int seconds, bool loopToSleep) {
     }
 #endif
 
-    bResult = setCountdownTimer(seconds, false);
+    bResult = setCountdownTimer(seconds, false, true);
     if (!bResult) {
         _log.error(errorMsg, __LINE__);
         return false;
