@@ -309,6 +309,9 @@ public:
      * 
      * @param seconds number of seconds to power down. Must be 0 < seconds <= 255.
      * The default is 30 seconds. If time-sensitive, 10 seconds is probably sufficient.
+     *
+     * @param loopToSleep if True, will loop until falls asleep or time elapses, else
+     * return immediatly
      * 
      * @return true on success or false if an error occurs.
      * 
@@ -324,7 +327,7 @@ public:
      * 
      * This works even if the RTC has not been set yet.
      */
-    bool deepPowerDown(int seconds = 30);
+    bool deepPowerDown(int seconds = 30, bool loopToSleep=true);
 
     /**
      * @brief Used internally by interruptCountdownTimer and deepPowerDown.
@@ -332,13 +335,16 @@ public:
      * @param value Value in seconds or minutes. Must be 0 < value <= 255! 
      * 
      * @param minutes True if minutes, false if seconds
+     *
+     * @param level True means the timer interrupt will act as a level shift rather
+     * than a pulse
      * 
      * @return true on success or false if an error occurs.
      * 
      * The countdown timer works even if the RTC has not been set yet, but is more
      * limited in range (maximum: 255 minutes).
      */
-    bool setCountdownTimer(int value, bool minutes);
+    bool setCountdownTimer(int value, bool minutes, bool level = false);
 
     /**
      * @brief Stops the interruptCountdownTimer

@@ -496,7 +496,7 @@ bool AB1805::interruptCountdownTimer(int value, bool minutes) {
     return true;
 }
 
-bool AB1805::deepPowerDown(int seconds) {
+bool AB1805::deepPowerDown(int seconds, bool loopToSleep) {
     static const char *errorMsg = "failure in deepPowerDown %d";
     bool bResult;
 
@@ -546,7 +546,7 @@ bool AB1805::deepPowerDown(int seconds) {
     }
 #endif
 
-    bResult = setCountdownTimer(seconds, false);
+    bResult = setCountdownTimer(seconds, false, true);
     if (!bResult) {
         _log.error(errorMsg, __LINE__);
         return false;
@@ -583,15 +583,16 @@ bool AB1805::deepPowerDown(int seconds) {
     }
 
     // _log.trace("delay in case we didn't power down");   
-    unsigned long start = millis();
-    while(millis() - start < (unsigned long) (seconds * 1000)) {
-        _log.info("REG_SLEEP_CTRL=0x%2x", readRegister(REG_SLEEP_CTRL));
-        delay(1000);
+    if(loopToSleep) {
+        unsigned long start = millis();
+        while(millis() - start < (unsigned long) (seconds * 1000)) {
+            _log.info("REG_SLEEP_CTRL=0x%2x", readRegister(REG_SLEEP_CTRL));
+            delay(1000);
+        }
     }
 
     _log.error("didn't power down");
     delay(10);
-    System.reset();
 
     return true;
 }
@@ -656,7 +657,7 @@ bool AB1805::checkVBAT(uint8_t mask, bool &isAbove) {
 
 
 
-bool AB1805::setCountdownTimer(int value, bool minutes) {
+bool AB1805::setCountdownTimer(int value, bool minutes, bool level) {
     static const char *errorMsg = "failure in setCountdownTimer %d";
     bool bResult;
 
@@ -698,7 +699,10 @@ bool AB1805::setCountdownTimer(int value, bool minutes) {
     uint8_t tfs = (minutes ? REG_TIMER_CTRL_TFS_1_60 : REG_TIMER_CTRL_TFS_1);
 
     // Enable countdown timer (TE = 1) in countdown timer control register
-    bResult = writeRegister(REG_TIMER_CTRL, REG_TIMER_CTRL_TE | tfs);
+    if(level)
+        bResult = writeRegister(REG_TIMER_CTRL, REG_TIMER_CTRL_TE | tfs | REG_TIMER_CTRL_TM);
+    else
+        bResult = writeRegister(REG_TIMER_CTRL, REG_TIMER_CTRL_TE | tfs);
     if (!bResult) {
         _log.error(errorMsg, __LINE__);
         return false;
