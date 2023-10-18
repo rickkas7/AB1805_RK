@@ -51,7 +51,7 @@ public:
      * 
      * @param callBegin Whether to call wire.begin(). Default is true.
      */
-    void setup(bool callBegin = true);
+    bool setup(bool callBegin = true);
 
     /**
      * @brief Call this from main loop(). Should be called on every call to loop().
