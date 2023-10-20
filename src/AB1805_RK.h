@@ -51,7 +51,7 @@ public:
      * 
      * @param callBegin Whether to call wire.begin(). Default is true.
      */
-    void setup(bool callBegin = true);
+    bool setup(bool callBegin = true);
 
     /**
      * @brief Call this from main loop(). Should be called on every call to loop().
@@ -74,8 +74,11 @@ public:
      * 
      * The FOUT/nIRQ pin is also used for one-time and periodic interrupts.
      */
-    AB1805 &withFOUT(pin_t pin) { foutPin = pin; return *this; };
-
+    AB1805 &withFOUT(pin_t pin) { 
+        foutPin = pin; 
+        pinMode(foutPin, OUTPUT);
+        return *this; 
+    };
 
     /**
      * @brief Checks the I2C bus to make sure there is an AB1805 present

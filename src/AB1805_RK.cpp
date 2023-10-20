@@ -20,7 +20,7 @@ AB1805::~AB1805() {
 }
 
 
-void AB1805::setup(bool callBegin) {
+bool AB1805::setup(bool callBegin) {
     if (callBegin) {
         wire.begin();
     }
@@ -39,12 +39,12 @@ void AB1805::setup(bool callBegin) {
 
             _log.info("set system clock from RTC %s", Time.format(time, TIME_FORMAT_DEFAULT).c_str());
         }
-    }
-    else {
+        System.on(reset, systemEventStatic);
+        return true;
+    } else {
         _log.error("failed to detect AB1805");
+        return false;
     }
-
-    System.on(reset, systemEventStatic);
 }
 
 void AB1805::loop() {
