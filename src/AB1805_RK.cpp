@@ -323,8 +323,6 @@ bool AB1805::getRtcAsTm(struct tm *timeptr) {
         bResult = readRegisters(REG_HUNDREDTH, array, sizeof(array));
         if (bResult) {
             registersToTm(&array[1], timeptr, true);
-
-            _log.info("getRtcAsTm %s", tmToString(timeptr).c_str());
         }
     }
     if (!bResult) {
