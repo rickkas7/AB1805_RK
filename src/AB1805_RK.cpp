@@ -6,7 +6,7 @@ static Logger _log("app.ab1805");
 
 // Define SET_D8_LOW on FeatherAB1805v1 boards as the pull-up is wired to 3V3R instead
 // of 3V3 which can cause current leakages when powering down using EN.
-#define SET_D8_LOW
+// #define SET_D8_LOW
 
 AB1805 *AB1805::instance = 0;
 

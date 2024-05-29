@@ -303,3 +303,9 @@ This is an example of using a board with a super capacitor.
 This is the deep power down example that uses a LiPo powered RTC to a deep power down, not using a supercap.
 
 - When the MODE button is tapped, the device goes into 30 second deep power down (with the RTC powered by the LiPo)
+
+## Version history
+
+### 0.0.2 (2024-05-29)
+
+- Disable SET_D8_LOW by default; it was accidentally left on in the previous version.
