@@ -23,9 +23,9 @@ SerialLogHandler logHandler;
 AB1805 ab1805(Wire);
 
 void setup() {
-    // The sample board has D8 connected to FOUT for wake interrupts, though this
-    // example does not use this feature.
-    ab1805.withFOUT(D8).setup();
+    // The sample board has D8 (Argon/Boron) or D10 (Photon 2) connected to FOUT for wake interrupts
+    // though this example does not use this feature.
+    ab1805.withFOUT(WKP).setup();
 
     // Reset the AB1805 configuration to default values
     ab1805.resetConfig();
@@ -305,6 +305,10 @@ This is the deep power down example that uses a LiPo powered RTC to a deep power
 - When the MODE button is tapped, the device goes into 30 second deep power down (with the RTC powered by the LiPo)
 
 ## Version history
+
+### 0.0.3 (2024-06-14)
+
+- Switch hardcoding of pin D8 to WKP. On the Photon 2, the WKP pin is D10 but is in the same position as D8.
 
 ### 0.0.2 (2024-05-29)
 

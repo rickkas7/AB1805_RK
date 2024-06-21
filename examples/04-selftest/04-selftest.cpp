@@ -37,7 +37,7 @@ void setup() {
     waitFor(Serial.isConnected, 15000);
     delay(1000);
 
-    ab1805.withFOUT(D8).setup();
+    ab1805.withFOUT(WKP).setup();
 
     // AB1805::PRESERVE_REPEATING_TIMER
     ab1805.resetConfig();
@@ -79,7 +79,7 @@ void loop() {
 
         SystemSleepConfiguration config;
         config.mode(SystemSleepMode::HIBERNATE)
-            .gpio(D8, FALLING);
+            .gpio(WKP, FALLING);
         System.sleep(config);
 
         // System should reset here
@@ -94,7 +94,7 @@ void loop() {
 
         SystemSleepConfiguration config;
         config.mode(SystemSleepMode::STOP)
-            .gpio(D8, FALLING);
+            .gpio(WKP, FALLING);
         System.sleep(config);
 
         waitFor(Serial.isConnected, 15000);
@@ -114,7 +114,7 @@ void loop() {
 
         SystemSleepConfiguration config;
         config.mode(SystemSleepMode::HIBERNATE)
-            .gpio(D8, FALLING);
+            .gpio(WKP, FALLING);
         System.sleep(config);
 
         // System should reset here
@@ -156,7 +156,7 @@ void loop() {
 
         SystemSleepConfiguration config;
         config.mode(SystemSleepMode::STOP)
-            .gpio(D8, FALLING);
+            .gpio(WKP, FALLING);
         System.sleep(config);
 
         waitFor(Serial.isConnected, 15000);
