@@ -9,10 +9,10 @@
 
 /**
  * @brief Class for using the AB1805/AM1805 RTC/watchdog chip
- * 
- * You typically allocate one of these objects as a global variable as 
+ *
+ * You typically allocate one of these objects as a global variable as
  * a singleton. You can only have one of these objects per device.
- * 
+ *
  * Be sure you call the setup() and loop() methods of the AB1805 object!
  */
 class AB1805 {
@@ -31,12 +31,12 @@ public:
     /**
      * @brief Construct the AB1805 driver object
      *
-     * @param wire The I2C (TwoWire) inteface to use. Usually `Wire`. 
-     * 
+     * @param wire The I2C (TwoWire) inteface to use. Usually `Wire`.
+     *
      * @param i2cAddr The I2C address. This is always 0x69 on the AB1805 as the
-     * address is not configurable.  
-     *  
-     * You typically allocate one of these objects as a global variable as 
+     * address is not configurable.
+     *
+     * You typically allocate one of these objects as a global variable as
      * a singleton. You can only have one of these objects per device.
      */
     AB1805(TwoWire &wire = Wire, uint8_t i2cAddr = AB1805_ADDRESS);
@@ -48,7 +48,7 @@ public:
 
     /**
      * @brief Call this from main setup() to initialize the library.
-     * 
+     *
      * @param callBegin Whether to call wire.begin(). Default is true.
      */
     bool setup(bool callBegin = true);
@@ -60,18 +60,18 @@ public:
 
     /**
      * @brief Call this before AB1805::setup() to specify the pin connected to FOUT/nIRQ.
-     * 
+     *
      * @param pin The pin (like `D8`) that is connected to FOUT.
-     * 
+     *
      * @return An AB1805& so you can chain the withXXX() calls, fluent-style-
      * then call the AB1805::setup() method.
-     * 
+     *
      * This must be called before setup(). Default is `PIN_INVALID` which signifies
      * that FOUT is not connected.
-     * 
+     *
      * This is used during chip detection as FOUT goes high after the AB1805
      * is initialized. While FOUT is low, the I2C interface is not yet ready.
-     * 
+     *
      * The FOUT/nIRQ pin is also used for one-time and periodic interrupts.
      */
     AB1805 &withFOUT(pin_t pin) { 
@@ -82,28 +82,28 @@ public:
 
     /**
      * @brief Checks the I2C bus to make sure there is an AB1805 present
-     * 
+     *
      * This is called during AB1805::setup().
      */
     bool detectChip();
 
     /**
      * @brief Check oscillator
-     * 
+     *
      * @return true if RC oscillator is being used, false if XT (crystal)
      */
     bool usingRCOscillator();
 
     /**
      * @brief Returns true if the RTC has been set
-     * 
+     *
      * On cold power-up before cloud connecting, this will be false. Note that
      */
     bool isRTCSet() { return isBitClear(REG_CTRL_1, REG_CTRL_1_WRTC); };
 
     /**
      * @brief Gets the reason the device was reset or woken. For example, TIMER, ALARM, WATCHDOG, etc.
-     * 
+     *
      * This is set during AB1805::setup() automatically (for HIBERNATE, ULP, and SLEEP_MODE_DEEP) as well as
      * normal reset, however if you are using STOP mode sleep, you must call `updateWakeReason()` after
      * System.sleep() returns to update the wake reason.
@@ -112,7 +112,7 @@ public:
 
     /**
      * @brief Update the wake reason. This is needed after STOP mode System.sleep()
-     * 
+     *
      * The wake reason is set during AB1805::setup() automatically (for HIBERNATE, ULP, and SLEEP_MODE_DEEP) as well as
      * normal reset, however if you are using STOP mode sleep, you must call `updateWakeReason()` after
      * System.sleep() returns to update the wake reason.
@@ -120,35 +120,35 @@ public:
     bool updateWakeReason();
 
     /**
-     * @brief Set or reset the watchdog timer. 
-     * 
-     * @param seconds Duration of watchdog timer or -1 to tickle/pet/service the watchdog. 
-     * 
+     * @brief Set or reset the watchdog timer.
+     *
+     * @param seconds Duration of watchdog timer or -1 to tickle/pet/service the watchdog.
+     *
      * Minimum is 4 and maximum is 124 seconds. 0 disables the watchdog timer.
-     * The constant `WATCHDOG_MAX_SECONDS` is 124 and is a good choice. 
-     * -1 resets the timer to the previous setting and is used to tickle/pet/service the 
+     * The constant `WATCHDOG_MAX_SECONDS` is 124 and is a good choice.
+     * -1 resets the timer to the previous setting and is used to tickle/pet/service the
      * watchdog timer. This is done from AB1805::loop().
-     * 
+     *
      * Periodically servicing the watchdog (-1) is handled automatically in AB1805::loop()
      * so you normally don't need to worry about it. Since it requires an I2C transaction
-     * you probably don't want to call it on every loop. 
+     * you probably don't want to call it on every loop.
      */
     bool setWDT(int seconds = -1);
 
     /**
      * @brief Stops the watchdog timer. Useful before entering sleep mode.
-     * 
+     *
      * This is done automatically right before reset (using the reset system event)
-     * so the watchdog won't trigger during a firmware update. 
+     * so the watchdog won't trigger during a firmware update.
      */
     bool stopWDT() { return setWDT(0); };
 
     /**
      * @brief Resumes watchdog with same settings as before
-     * 
+     *
      * This is useful after returning from `System.sleep()` in STOP or ULTRA_LOW_POWER
      * sleep modes where executinon continues. You may also want to call `updateWakeReason()`.
-     * 
+     *
      * It's safe to call resumeWDT() even if the WDT has never been set, it does nothing
      * in this case, leaving the watchdog off.
      */
@@ -156,11 +156,11 @@ public:
 
     /**
      * @brief Get the time from the RTC as a time_t
-     * 
+     *
      * @param time Filled in with the number of second since January 1, 1970 UTC.
-     * 
+     *
      * @return true on success or false if an error occurs.
-     * 
+     *
      * The time value is basically the same as what would be returned from `Time.now()`
      * except it's retrieved from the AB1805 RTC instead of the system. However both
      * should approximately equal to each other.
@@ -169,16 +169,16 @@ public:
 
     /**
      * @brief Get the time from the RTC as a struct tm
-     * 
+     *
      * @param timeptr pointer to struct tm. Filled in with the current time, UTC.
-     * 
+     *
      * @return true on success or false if an error occurs.
-     * 
+     *
      * Note: This uses mktime, which technically is local time, not UTC. However,
      * the standard library is set at UTC as the local time. Using Time.zone() changes
-     * the timezone in the `Time` class but does not modifying the underling 
+     * the timezone in the `Time` class but does not modifying the underling
      * standard C library, so mktime should always be UTC.
-     * 
+     *
      * The fields of the timeptr are:
      * - tm_sec	  seconds after the minute	0-61 (usually 0-59)
      * - tm_min	  minutes after the hour 0-59
@@ -192,11 +192,11 @@ public:
 
     /**
      * @brief Resets the configuration of the AB1805 to default settings
-     * 
+     *
      * @param flags flags to customize reset behavior (default: 0)
-     * 
+     *
      * @return true on success or false if an error occurs.
-     * 
+     *
      * The only exception currently defined is `AB1805::RESET_PRESERVE_REPEATING_TIMER` that
      * keeps repeating timers programmed when resetting configuration.
      */
@@ -204,15 +204,15 @@ public:
 
     /**
      * @brief Set an interrupt at a time in the future using a time_t
-     * 
-     * @param time The number of second after January 1, 1970 UTC. 
-     * 
+     *
+     * @param time The number of second after January 1, 1970 UTC.
+     *
      * @return true on success or false if an error occurs.
-     * 
+     *
      * This causes an interrupt on FOUT/nIRQ in the future. It will execute
      * once. This can only be done if the RTC has been programmed with
      * the current time, which it normally gets from the cloud at startup.
-     * 
+     *
      * There can only be one interrupt set. Setting at one-time or repeating interrupt
      * removes any previously set interrupt time.
      */
@@ -220,21 +220,21 @@ public:
 
     /**
      * @brief Set an interrupt at a time in the future using a struct tm *.
-     * 
+     *
      * @param timeptr pointer to struct tm. This specifies the time (UTC).
-     * 
+     *
      * @return true on success or false if an error occurs.
-     * 
+     *
      * This causes an interrupt on FOUT/nIRQ in the future. It will execute
      * once. This can only be done if the RTC has been programmed with
      * the current time, which it normally gets from the cloud at startup.
-     * 
-     * Only the tm_sec, tm_min, tm_hour, tm_mday, tm_mon, and tm_year are 
+     *
+     * Only the tm_sec, tm_min, tm_hour, tm_mday, tm_mon, and tm_year are
      * used. The tm_wday field is ignored. Note that tm_mon is 0-11, not 1-12.
-     * 
+     *
      * There can only be one interrupt set. Setting at one-time or repeating interrupt
      * removes any previously set interrupt time.
-     * 
+     *
      * The fields of the timeptr are:
      * - tm_sec	  seconds after the minute	0-61 (usually 0-59)
      * - tm_min	  minutes after the hour 0-59
@@ -248,33 +248,33 @@ public:
 
     /**
      * @brief Set a repeating interrupt
-     * 
+     *
      * @param timeptr pointer to struct tm. This specifies the time (UTC).
-     * 
+     *
      * @param rptValue a constant for which fields of timeptr are used.
-     * 
+     *
      * @return true on success or false if an error occurs.
-     * 
+     *
      * This causes an interrupt on FOUT/nIRQ in the future, repeating.
      * This can only be done if the RTC has been programmed with
      * the current time, which it normally gets from the cloud at startup.
-     * 
+     *
      * - `REG_TIMER_CTRL_RPT_SEC` tm_sec matches (once per minute)
      * - `REG_TIMER_CTRL_RPT_MIN` tm_sec, tm_min match (once per hour)
      * - `REG_TIMER_CTRL_RPT_HOUR` tm_sec, tm_min, tm_hour match (once per day)
      * - `REG_TIMER_CTRL_RPT_WKDY` tm_sec, tm_min, tm_hour, tm_wday match (once per week)
      * - `REG_TIMER_CTRL_RPT_DATE` tm_sec, tm_min, tm_hour, tm_mday match (once per month)
      * - `REG_TIMER_CTRL_RPT_MON` tm_sec, tm_min, tm_hour, tm_mday, tm_mon match (once per year)
-     * 
-     * Note that tm_mon (month) is 0 - 11, not 1 - 12! 
-     * 
+     *
+     * Note that tm_mon (month) is 0 - 11, not 1 - 12!
+     *
      * There can only be one interrupt set. Setting at one-time or repeating interrupt
      * removes any previously set interrupt time.
-     * 
+     *
      * If you reset the AB1805 configuration using `resetConfig()`, the repeating timer
-     * will be cleared, unless you add the `AB1805::RESET_PRESERVE_REPEATING_TIMER` parameter 
+     * will be cleared, unless you add the `AB1805::RESET_PRESERVE_REPEATING_TIMER` parameter
      * to preserve it.
-     * 
+     *
      * The fields of the timeptr are:
      * - tm_sec	  seconds after the minute	0-61 (usually 0-59)
      * - tm_min	  minutes after the hour 0-59
@@ -295,21 +295,21 @@ public:
 
     /**
      * @brief Interrupt at a time in the future, either in minutes or seconds
-     * 
-     * @param value Value in seconds or minutes. Must be 0 < value <= 255! 
-     * 
+     *
+     * @param value Value in seconds or minutes. Must be 0 < value <= 255!
+     *
      * @param minutes True if minutes, false if seconds
-     * 
+     *
      * @return true on success or false if an error occurs.
 
      * The countdown timer works even if the RTC has not been set yet, but is more
      * limited in range (maximum: 255 minutes).
      */
-    bool interruptCountdownTimer(int value, bool minutes);
+    bool interruptCountdownTimer(int value, bool minutes, bool level=false);
 
     /**
      * @brief Enters deep power down reset mode, using the EN pin
-     * 
+     *
      * @param seconds number of seconds to power down. Must be 0 < seconds <= 255.
      * The default is 30 seconds. If time-sensitive, 10 seconds is probably sufficient.
      *
@@ -317,37 +317,40 @@ public:
      * return immediatly
      * 
      * @return true on success or false if an error occurs.
-     * 
+     *
      * This method powers down the MCU and cellular modem by using a combination
      * of the EN and RST pins. This super-reset is similar to what would happen if
      * you disconnected the battery.
-     * 
-     * It assumes that EN is connected to /nIRQ2 (PSW) on the AB1805 using an 
+     *
+     * It assumes that EN is connected to /nIRQ2 (PSW) on the AB1805 using an
      * N-channel MOSFET and RST is connected to /RESET on the AB1805.
-     * 
+     *
      * After the deep reset finishes, the device will reboot and go back through
      * setup() again. Calling getWakeReset() will return the reason `DEEP_POWER_DOWN`.
-     * 
+     *
      * This works even if the RTC has not been set yet.
      */
     bool deepPowerDown(int seconds = 30, bool loopToSleep=true);
 
     /**
      * @brief Used internally by interruptCountdownTimer and deepPowerDown.
-     * 
-     * @param value Value in seconds or minutes. Must be 0 < value <= 255! 
-     * 
+     *
+     * @param value Value in seconds or minutes. Must be 0 < value <= 255!
+     *
      * @param minutes True if minutes, false if seconds
      *
+
+
      * @param level True means the timer interrupt will act as a level shift rather
      * than a pulse
      * 
+
      * @return true on success or false if an error occurs.
-     * 
+     *
      * The countdown timer works even if the RTC has not been set yet, but is more
      * limited in range (maximum: 255 minutes).
      */
-    bool setCountdownTimer(int value, bool minutes, bool level = false);
+    bool setCountdownTimer(int value, bool minutes, bool level=false);
 
     /**
      * @brief Stops the interruptCountdownTimer
@@ -358,33 +361,33 @@ public:
 
     /**
      * @brief Enable trickle charging mode
-     * 
+     *
      * @param diodeAndRout Pass 0 to disable the trickle charger or one diode constant and one rout constant below.
-     * 
+     *
      * @return true on success or false if an error occurs.
-     * 
+     *
      * Diode settings determine the voltage applied to the supercap or battery in trickle charge mode.
      * This is from VCC, which is generally 3V3, so this will be a voltage of 2.7V or 3.0V. This makes
      * the trickle charger compatible with a wider variety of supercaps.
-     * 
+     *
      * - `REG_TRICKLE_DIODE_0_6` diode 0.6V drop
      * - `REG_TRICKLE_DIODE_0_3` diode 0.3V drop
-     * 
+     *
      * The ROUT setting determines the series resistor to the supercap. This determines charging speed.
-     * 
+     *
      * - `REG_TRICKLE_ROUT_11K` rout 11K
      * - `REG_TRICKLE_ROUT_6K` rout 6K
      * - `REG_TRICKLE_ROUT_3K` rout 3K
-     * 
+     *
      * The sample design includes an additional 1.5K series resistance using an external resistor, so
      * applying 3K results in an actual series resistance of 4.5K.
-     * 
+     *
      */
     bool setTrickle(uint8_t diodeAndRout);
 
     /**
      * @brief Returns true if VBAT input is above minimum operating voltage (1.2V)
-     * 
+     *
      * This function will check if trickle charging is enabled first. If enabled, it will be turned off,
      * the value checked, then turned back on again.
      */
@@ -392,13 +395,13 @@ public:
 
     /**
      * @brief Returns true if VBAT input is above BREF voltage
-     * 
+     *
      * The power-up default for BREF is 1.4V (`REG_BREF_CTRL_14_16`), so this provides
      * some additional margin over the minimum voltage (1.2V). BREF can be changed
      * to check for higher voltages (fully charged, for example) but it takes several
      * seconds for the values to settle after making a change, so you don't want to
      * change it too often.
-     * 
+     *
      * This function will check if trickle charging is enabled first. If enabled, it will be turned off,
      * the value checked, then turned back on again.
      */
@@ -406,11 +409,11 @@ public:
 
     /**
      * @brief Checks VBAT status
-     * 
+     *
      * @param mask Either REG_ASTAT_BBOD (compare againt BREF) or REG_ASTAT_BMIN (compare against minimum, 1.2V)
-     * 
+     *
      * @param isAbove True if VBAT is above the specified voltage, or false if not
-     * 
+     *
      * This function will check if trickle charging is enabled first. If enabled, it will be turned off,
      * the value checked, then turned back on again.
      */
@@ -418,7 +421,7 @@ public:
 
     /**
      * @brief Set the RTC from the system clock
-     * 
+     *
      * This is called automatically from AB1805::loop() when the time is updated from the cloud.
      * You normally don't need to call this yourself.
      */
@@ -426,13 +429,13 @@ public:
 
     /**
      * @brief Sets the RTC from a time_t
-     * 
+     *
      * @param time The time (in seconds since January 1, 1970, UNIX epoch), UTC.
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * This is called automatically from AB1805::loop() when the time is updated from the cloud.
      * You normally don't need to call this yourself. You might call this if you are also getting
      * time from an external source like a GPS.
@@ -441,13 +444,13 @@ public:
 
     /**
      * @brief Sets the RTC from a time_t
-     * 
-     * @param timeptr A struct tm specifying the time. 
-     * 
+     *
+     * @param timeptr A struct tm specifying the time.
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * The following fields are required:
      * - tm_sec	  seconds after the minute	0-61 (usually 0-59)
      * - tm_min	  minutes after the hour 0-59
@@ -456,46 +459,46 @@ public:
      * - tm_mon	  months since January 0-11 (not 1-12!)
      * - tm_year  years since 1900 (note: 2020 = 120)
      * - tm_wday  days since Sunday	0-6
-     * 
+     *
      * Note that you must include tm_wday and 0 = Sunday, 1 = Monday, ...
      * Month of year is 0 - 11, NOT 1 - 12!
      * Year is years since 1900, so 2020 has 120 in the tm_year field!
-     * 
+     *
      * This is called automatically from AB1805::loop() when the time is updated from the cloud.
      * You normally don't need to call this yourself. You might call this if you are also getting
      * time from an external source like a GPS.
      */
     bool setRtcFromTm(const struct tm *timeptr, bool lock = true);
 
-    
+
     /**
      * @brief Reads a AB1805 register (single byte)
-     * 
+     *
      * @param regAddr Register address to read from (0x00 - 0xff)
-     * 
+     *
      * @param value Filled in with the value from the register
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * @return true on success or false on error
-     * 
+     *
      * There is also an overload that returns value instead of passing it by reference.
      */
     bool readRegister(uint8_t regAddr, uint8_t &value, bool lock = true);
 
     /**
      * @brief Reads a AB1805 register (single byte) and returns it
-     * 
+     *
      * @param regAddr Register address to read from (0x00 - 0xff)
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * @return The value of the register or 0x00 if it could not be read.
-     * 
+     *
      * There is an overload that takes a uint8_t &value parameter which is generally
      * better because you can tell the difference between a value of 0 and a failure
      * (false is returned).
@@ -504,78 +507,78 @@ public:
 
     /**
      * @brief Reads sequential registers
-     * 
-     * @param regAddr Register address to start reading from (0x00 - 0xff) 
-     * 
+     *
+     * @param regAddr Register address to start reading from (0x00 - 0xff)
+     *
      * @param array Array of uint8_t values, filled in by this call
-     * 
+     *
      * @param num Number of registers to read
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * Reads a number of registers at once. This is done when reading the RTC value so
      * it's atomic (counters will not be incremented in the middle of a read). Also used
      * for reading the device RAM.
-     * 
-     * Do not read past address 0xff. 
+     *
+     * Do not read past address 0xff.
      */
     bool readRegisters(uint8_t regAddr, uint8_t *array, size_t num, bool lock = true);
 
 
     /**
      * @brief Writes a AB1805 register (single byte)
-     * 
+     *
      * @param regAddr Register address to write to (0x00 - 0xff)
-     * 
+     *
      * @param value This value is written to the register
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * @return true on success or false on error
      */
     bool writeRegister(uint8_t regAddr, uint8_t value, bool lock = true);
 
     /**
      * @brief Writes sequential AB1805 registers
-     * 
+     *
      * @param regAddr Register address to start writing to (0x00 - 0xff)
-     * 
+     *
      * @param array Array of uint8_t values to write
-     * 
+     *
      * @param num Number of registers to write
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * @return true on success or false on error
-     * 
-     * Do not write past address 0xff. 
+     *
+     * Do not write past address 0xff.
      */
     bool writeRegisters(uint8_t regAddr, const uint8_t *array, size_t num, bool lock = true);
 
     /**
      * @brief Writes a AB1805 register (single byte) with masking of existing value
-     * 
+     *
      * @param regAddr Register address to read from and write to (0x00 - 0xff)
-     * 
+     *
      * @param andValue The existing register values is logically ANDed with this value
-     * 
+     *
      * @param orValue This value is logically ORed with this value before storing
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * @return true on success or false on error
-     * 
+     *
      * If lock is true then the lock surrounds both the read and write, so the operation is
      * atomic.
-     * 
+     *
      * If the value is unchanged after the andValue and orValue is applied, the write is skipped.
      * The read is always done.
      */
@@ -583,68 +586,68 @@ public:
 
     /**
      * @brief Returns true if a bit in a register is 0
-     * 
+     *
      * @param regAddr Register address to read from (0x00 - 0xff)
-     * 
+     *
      * @param bitMask Mask to check. Note that the bitMask should have a 1 bit where you are checking
      * for a 0 bit! Normally there is only one bit set in bitMask.
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * @return true if the register could be read and the bit is 0, otherwise false.
      */
     bool isBitClear(uint8_t regAddr, uint8_t bitMask, bool lock = true);
 
     /**
      * @brief Returns true if a bit in a register is 1
-     * 
+     *
      * @param regAddr Register address to read from (0x00 - 0xff)
-     * 
+     *
      * @param bitMask Mask to check. The bitMask should have a 1 bit where you are checking
      * for a 1 bit. Normally there is only one bit set in bitMask.
-     * 
+     *
      * @param lock Lock the I2C bus. Default = true. Pass false if surrounding a block of
      * related calls with a wire.lock() and wire.unlock() so the block cannot be interrupted
      * with other I2C operations.
-     * 
+     *
      * @return true if the register could be read and the bit is 1, otherwise false.
      */
     bool isBitSet(uint8_t regAddr, uint8_t bitMask, bool lock = true);
 
     /**
      * @brief Clear a bit in a register
-     * 
+     *
      * @param regAddr The address of the register to read/write
-     * 
+     *
      * @param bitMask The bit mask to clear. This has a 1 bit in the bit you want to clear, and will typically
      * only have one bit set, though you can clear multiple bits at the same time with this function.
-     * 
+     *
      * @param lock Whether to lock the I2C bus, the default is true. You pass false if you are grouping
      * together functions in a single lock, for example doing a read/modify/write cycle.
-     * 
+     *
      * The bit is cleared only if set. If the bit(s) are already cleared, then only the read is done,
-     * and the write is skipped. A read is always done. 
-     * 
+     * and the write is skipped. A read is always done.
+     *
      * If lock is true, then the lock surround both the read and write so the entire operation is atomic.
      */
     bool clearRegisterBit(uint8_t regAddr, uint8_t bitMask, bool lock = true);
 
     /**
      * @brief Sets a bit in a register
-     * 
+     *
      * @param regAddr The address of the register to read/write
-     * 
+     *
      * @param bitMask The bit mask to set. This has a 1 bit in the bit you want to set, and will typically
      * only have one bit set, though you can set multiple bits at the same time with this function.
-     * 
+     *
      * @param lock Whether to lock the I2C bus, the default is true. You pass false if you are grouping
      * together functions in a single lock, for example doing a read/modify/write cycle.
-     * 
+     *
      * The bit is set only if cleared (0). If the bit(s) are already set, then only the read is done,
      * and the write is skipped. A read is always done.
-     * 
+     *
      * If lock is true, then the lock surround both the read and write so the entire operation is atomic.
      */
     bool setRegisterBit(uint8_t regAddr, uint8_t bitMask, bool lock = true);
@@ -656,7 +659,7 @@ public:
 
 	/**
 	 * @brief Erases the RTC RAM to 0x00 values
-     * 
+     *
      * @param lock Whether to lock the I2C bus, the default is true. You pass false if you are grouping
      * together functions in a single lock, for example doing a read/modify/write cycle.
 	 */
@@ -666,7 +669,7 @@ public:
 	 * @brief Read from RTC RAM using EEPROM-style API
 	 *
 	 * @param ramAddr The address in the RTC RAM to read from
-     * 
+     *
 	 * @param t The variable to read to. This must be a simple type (bool, int, float, etc.)
      * or struct. It cannot save a c-string (const char *), String, or other class. You
      * typically cannot get any pointers or structs containing pointers.
@@ -680,7 +683,7 @@ public:
 	 * @brief Write from RTC RAM using EEPROM-style API
 	 *
 	 * @param ramAddr The address in the RTC RAM to write to
-     * 
+     *
 	 * @param t The variable to write from. t is not modified. This must be a simple type (bool, int, float, etc.)
      * or struct. It cannot save a c-string (const char *), String, or other class. You
      * typically cannot save any pointers or structs containing pointers.
@@ -701,7 +704,7 @@ public:
 	 *
      * @param lock Whether to lock the I2C bus, the default is true. You pass false if you are grouping
      * together functions in a single lock, for example doing a read/modify/write cycle.
-     * 
+     *
 	 * The dataLen can be larger than the maximum I2C read. Multiple reads will be done if necessary.
      * However do not read past the end of RAM (address 255).
      */
@@ -718,7 +721,7 @@ public:
 	 *
      * @param lock Whether to lock the I2C bus, the default is true. You pass false if you are grouping
      * together functions in a single lock, for example doing a read/modify/write cycle.
-     * 
+     *
 	 * The dataLen can be larger than the maximum I2C write. Multiple writes will be done if necessary.
      * However do not read past the end of RAM (address 255).
      */
@@ -726,35 +729,35 @@ public:
 
     /**
      * @brief Utility function to convert a struct tm * to a readable string
-     * 
-     * @return String in the format of "yyyy-mm-dd hh:mm:ss". 
+     *
+     * @return String in the format of "yyyy-mm-dd hh:mm:ss".
      */
     static String tmToString(const struct tm *timeptr);
 
     /**
      * @brief Convert a struct tm to register values for the AB1805
-     * 
+     *
      * @param timeptr Pointer to a struct tm with the values to convert from
-     * 
+     *
      * @param array Array of uint8_t to store the values to. This must be at least 6 bytes
      * if includeYear is false or 7 if true. This points to the seconds field, not the
      * hundredths field!
-     * 
+     *
      * @param includeYear True if this is the the year should be included (time setting),
      * or false if the year should not be included (alarm setting).
-     * 
+     *
      * Note: Does not include the hundredths are struct tm doesn't include fractional seconds.
      */
     static void tmToRegisters(const struct tm *timeptr, uint8_t *array, bool includeYear);
 
     /**
      * @brief Convert register values to a struct tm
-     * 
+     *
      * @param array Pointer to an array of values from the AB1805. Point to the seconds
      * (not hundredths).
-     * 
+     *
      * @param timeptr Pointer to a struct tm to hold the converted time
-     * 
+     *
      * @param includeYear True if this is the the year should be included (time setting),
      * or false if the year should not be included (alarm setting).
      */
@@ -772,7 +775,7 @@ public:
 
     static const uint32_t RESET_PRESERVE_REPEATING_TIMER    = 0x00000001;   //!< When resetting registers, leave repeating timer settings intact
     static const uint32_t RESET_DISABLE_XT                  = 0x00000002;   //!< When resetting registers, disable XT oscillator
-    
+
     static const int WATCHDOG_MAX_SECONDS = 124;    //!< Maximum value that can be passed to setWDT().
 
 
@@ -850,8 +853,8 @@ public:
     static const uint8_t   REG_SLEEP_CTRL_SLST      = 0x08;      //!< Sleep control, set when sleep has occurred
     static const uint8_t   REG_SLEEP_CTRL_SLTO_MASK = 0x07;      //!< Sleep control, number of 7.8ms periods before sleep
     static const uint8_t   REG_SLEEP_CTRL_DEFAULT   = 0x00;      //!< Sleep control default (0b00000000)
-    static const uint8_t REG_TIMER_CTRL             = 0x18;      //!< Countdown timer control 
-    static const uint8_t   REG_TIMER_CTRL_TE        = 0x80;      //!< Countdown timer control, timer enable 
+    static const uint8_t REG_TIMER_CTRL             = 0x18;      //!< Countdown timer control
+    static const uint8_t   REG_TIMER_CTRL_TE        = 0x80;      //!< Countdown timer control, timer enable
     static const uint8_t   REG_TIMER_CTRL_TM        = 0x40;      //!< Countdown timer control, timer interrupt mode
     static const uint8_t   REG_TIMER_CTRL_TRPT      = 0x20;      //!< Countdown timer control, timer repeat function
     static const uint8_t   REG_TIMER_CTRL_RPT_MASK  = 0x1c;      //!< Countdown timer control, repeat function
@@ -872,7 +875,7 @@ public:
     static const uint8_t REG_TIMER                  = 0x19;      //!< Countdown timer current value register
     static const uint8_t   REG_TIMER_DEFAULT        = 0x00;      //!< Countdown timer current value register default value (0x00)
     static const uint8_t REG_TIMER_INITIAL          = 0x1a;      //!< Countdown timer inital (reload) value register
-    static const uint8_t   REG_TIMER_INITIAL_DEFAULT= 0x00;      //!< Countdown timer inital value register default value 
+    static const uint8_t   REG_TIMER_INITIAL_DEFAULT= 0x00;      //!< Countdown timer inital value register default value
     static const uint8_t REG_WDT                    = 0x1b;      //!< Watchdog timer control register
     static const uint8_t   REG_WDT_RESET            = 0x80;      //!< Watchdog timer control, enable reset (1) or WIRQ (0)
     static const uint8_t   REG_WDT_WRB_16_HZ        = 0x00;      //!< Watchdog timer control, WRB watchdog clock = 16 Hz
@@ -942,13 +945,13 @@ public:
     static const uint8_t REG_OCTRL                  = 0x30;      //!< Output control register at power-down
     static const uint8_t   REG_OCTRL_WDBM           = 0x80;      //!< Output control register, WDI enabled when powered from VBAT
     static const uint8_t   REG_OCTRL_EXBM           = 0x40;      //!< Output control register, EXTI enabled when powered from VBAT
-    static const uint8_t   REG_OCTRL_WDDS           = 0x20;      //!< Output control register, WDI disabled in sleep 
+    static const uint8_t   REG_OCTRL_WDDS           = 0x20;      //!< Output control register, WDI disabled in sleep
     static const uint8_t   REG_OCTRL_EXDS           = 0x10;      //!< Output control register, EXTI disabled in sleep
     static const uint8_t   REG_OCTRL_RSEN           = 0x08;      //!< Output control register, nRST output enabled in sleep
     static const uint8_t   REG_OCTRL_O4EN           = 0x04;      //!< Output control register, CLKOUT/nIRQ3 enabled in sleep
     static const uint8_t   REG_OCTRL_O3EN           = 0x02;      //!< Output control register, nTIRQ enabled in sleep
-    static const uint8_t   REG_OCTRL_O1EN           = 0x01;      //!< Output control register, FOUT/nIRQ enabled in sleep 
-    static const uint8_t   REG_OCTRL_DEFAULT        = 0x00;      //!< Output control register, default 
+    static const uint8_t   REG_OCTRL_O1EN           = 0x01;      //!< Output control register, FOUT/nIRQ enabled in sleep
+    static const uint8_t   REG_OCTRL_DEFAULT        = 0x00;      //!< Output control register, default
     static const uint8_t REG_EXT_ADDR               = 0x3f;      //!< Extension RAM address
     static const uint8_t   REG_EXT_ADDR_O4MB        = 0x80;      //!< Extension RAM address, CLKOUT/nIRQ3 enabled when powered from VBAT
     static const uint8_t   REG_EXT_ADDR_BPOL        = 0x40;      //!< Extension RAM address, BL polarity
@@ -963,7 +966,7 @@ public:
 protected:
     /**
      * @brief Internal function used to handle system events
-     * 
+     *
      * We currently only handle the reset event to disable the WDT before reset so it
      * won't trigger during a OTA firmware update.
      */
@@ -971,7 +974,7 @@ protected:
 
     /**
      * @brief Static function passed to System.on
-     * 
+     *
      * AB1805 is a singleton so AB1805::instance is used to find the instance pointer.
      */
     static void systemEventStatic(system_event_t event, int param);
@@ -979,7 +982,7 @@ protected:
     /**
      * @brief Which I2C (TwoWire) interface to use. Usually Wire, is Wire1 on Tracker SoM
      */
-    TwoWire &wire = Wire; 
+    TwoWire &wire = Wire;
 
     /**
      * @brief I2C address, always 0x69 as that is the address hardwired in the AB1805
@@ -988,9 +991,9 @@ protected:
 
     /**
      * @brief Which GPIO is connected to FOUT/nIRQ
-     * 
-     * Set to PIN_INVALID if not connected. 
-     * 
+     *
+     * Set to PIN_INVALID if not connected.
+     *
      * This is used for interrupts, and also to detect if the AB1805 is alive, during
      * detectChip(). If not connected, then only I2C is used to detect the chip.
      */
@@ -998,7 +1001,7 @@ protected:
 
     /**
      * @brief Watchdog period in seconds (1 <= watchdogSecs <= 124) or 0 for disabled.
-     * 
+     *
      * This is used so setWDT(-1) can restore the previous value.
      */
     int watchdogSecs = 0;
