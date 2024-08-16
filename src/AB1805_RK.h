@@ -74,10 +74,10 @@ public:
      *
      * The FOUT/nIRQ pin is also used for one-time and periodic interrupts.
      */
-    AB1805 &withFOUT(pin_t pin) { 
-        foutPin = pin; 
+    AB1805 &withFOUT(pin_t pin) {
+        foutPin = pin;
         pinMode(foutPin, OUTPUT);
-        return *this; 
+        return *this;
     };
 
     /**
@@ -315,7 +315,7 @@ public:
      *
      * @param loopToSleep if True, will loop until falls asleep or time elapses, else
      * return immediatly
-     * 
+     *
      * @return true on success or false if an error occurs.
      *
      * This method powers down the MCU and cellular modem by using a combination
@@ -343,8 +343,12 @@ public:
 
      * @param level True means the timer interrupt will act as a level shift rather
      * than a pulse
+<<<<<<< Updated upstream
      * 
 
+=======
+     *
+>>>>>>> Stashed changes
      * @return true on success or false if an error occurs.
      *
      * The countdown timer works even if the RTC has not been set yet, but is more
@@ -651,6 +655,8 @@ public:
      * If lock is true, then the lock surround both the read and write so the entire operation is atomic.
      */
     bool setRegisterBit(uint8_t regAddr, uint8_t bitMask, bool lock = true);
+
+    uint16_t getPartNumber(bool lock=true);
 
 	/**
 	 * @brief Returns the length of the RTC RAM in bytes (always 256)

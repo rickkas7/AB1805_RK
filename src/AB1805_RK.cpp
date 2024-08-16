@@ -580,7 +580,7 @@ bool AB1805::deepPowerDown(int seconds, bool loopToSleep) {
         return false;
     }
 
-    // _log.trace("delay in case we didn't power down");   
+    // _log.trace("delay in case we didn't power down");
     if(loopToSleep) {
         unsigned long start = millis();
         while(millis() - start < (unsigned long) (seconds * 1000)) {
@@ -984,6 +984,17 @@ bool AB1805::writeRam(size_t ramAddr, const uint8_t *data, size_t dataLen, bool 
     }
 
     return bResult;
+}
+
+uint16_t AB1805::getPartNumber(bool lock) {
+    uint8_t idBytes[2];
+    bool bResult = readRegisters(REG_ID0, idBytes, 2, lock);
+    if (!bResult) {
+        return 0;
+    }
+    uint16_t id = idBytes[0];
+    id = id << 8 | idBytes[1];
+    return id;
 }
 
 // [static]
