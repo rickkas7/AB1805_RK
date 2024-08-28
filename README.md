@@ -306,6 +306,10 @@ This is the deep power down example that uses a LiPo powered RTC to a deep power
 
 ## Version history
 
+### 0.0.4 (2024-08-28)
+
+- Added a check to prevent the loop() function from blocking while connecting to the cloud if the time is set.
+
 ### 0.0.3 (2024-06-14)
 
 - Switch hardcoding of pin D8 to WKP. On the Photon 2, the WKP pin is D10 but is in the same position as D8.

@@ -48,7 +48,9 @@ void AB1805::setup(bool callBegin) {
 }
 
 void AB1805::loop() {
-    if (!timeSet && Time.isValid() && Particle.timeSyncedLast() != 0) {
+    // The check for Particle.connected is because while connecting to the cloud, timeSyncedLast
+    // can block until the connection is complete.
+    if (!timeSet && Time.isValid() && Particle.connected() && Particle.timeSyncedLast() != 0) {
         timeSet = true;
 
         time_t time = Time.now();
